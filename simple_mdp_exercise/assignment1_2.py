@@ -2,12 +2,13 @@ import random
 
 
 class MDP:
-    def __init__(self, states, actions, transition_probabilities, rewards, terminal_states = {}, gamma=0.9, eps=1e6, is_slippery=0.0,
+    def __init__(self, states, actions, transition_probabilities, rewards, start_state, terminal_states = {}, gamma=0.9, eps=1e6, is_slippery=0.0,
                  cost_of_living=0):
         self.states = states
         self.actions = actions
         self.transition_probabilities = transition_probabilities
         self.rewards = rewards
+        self.start_state = start_state
         self.terminal_states = terminal_states
         self.gamma = gamma
         self.eps = eps
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         's3': {'b': {'s2': 100}}
     }
 
-    mdp = MDP(states, actions, transition_probabilities=transition_probabilities, rewards=rewards)  # create an MDP
+    mdp = MDP(states, actions, transition_probabilities, rewards, 's1')  # create an MDP
 
     mdp.calculate_value()
 

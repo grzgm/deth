@@ -1,4 +1,3 @@
-import random
 from assignment1_2 import MDP
 
 if __name__ == "__main__":
@@ -21,7 +20,7 @@ if __name__ == "__main__":
             'a1': {'s0': -1}},
     }
 
-    mdp = MDP(states, actions, transition_probabilities=transition_probabilities, rewards=rewards)  # create an MDP
+    mdp = MDP(states, actions, transition_probabilities, rewards, 's0')  # create an MDP
 
     mdp.calculate_value()
 
