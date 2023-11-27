@@ -1,0 +1,16 @@
+frequent_rewards = False, is_slippery = False, T = 100, exploration_rate = 0.01
+makes the agent do mostly action from the 0 index, and agent does not learn anything
+
+frequent_rewards = True, is_slippery = False, exploration_rate = 0.01
+makes the agent change his tactic, because he is penalised for wrong moves (exploration_rate is low) he is trying to get the path with max reward
+
+frequent_rewards = True, is_slippery = False, T = 1000, exploration_rate = 0.01
+Changing T to 1000, did not change much agent behaviour, only his first moves have lower reward
+
+frequent_rewards = True, is_slippery = True, T = 100, exploration_rate = 0.01
+Huge reward noise, but still agent is learning
+
+frequent_rewards = True, is_slippery = Flase, T = 100, exploration_rate = 0.5
+Moving average reword is always 0, due to agent choosing practicly randomly
+
+Frequent Learning had huge impact becaues it allowed agent to finaly start updateing q-table.
