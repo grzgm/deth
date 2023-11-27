@@ -3,8 +3,8 @@ from math import isclose
 
 
 class MDP:
-    def __init__(self, states, actions, transition_probabilities, rewards, start_state, terminal_states = {}, gamma=0.9, eps=1e6, is_slippery=0.0,
-                 cost_of_living=0):
+    def __init__(self, states, actions, transition_probabilities, rewards, start_state, terminal_states = {}, gamma=0.9, eps=1e6, random_termination=0.0,
+                 cost_of_living=0.0):
         self.states = states
         self.actions = actions
         self.transition_probabilities = transition_probabilities
@@ -14,7 +14,7 @@ class MDP:
         self.terminal_states = terminal_states
         self.gamma = gamma
         self.eps = eps
-        self.is_slippery = is_slippery
+        self.random_termination = random_termination
         self.cost_of_living = cost_of_living
 
         self.value = {}
