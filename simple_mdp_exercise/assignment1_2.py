@@ -8,6 +8,7 @@ class MDP:
         self.states = states
         self.actions = actions
         self.transition_probabilities = transition_probabilities
+        self.inspect_probabilities()
         self.rewards = rewards
         self.start_state = start_state
         self.terminal_states = terminal_states
@@ -47,7 +48,7 @@ class MDP:
     # def policy_random(self):
     #     return random.choice(self.actions)
     #
-    # def calculate_value(self):
+    # def estimate_value(self):
     #     for _ in range(int(self.eps)):
     #         for state in self.states:
     #             self.value[state] = self.action_value(state, self.policy_random())
@@ -72,9 +73,3 @@ if __name__ == "__main__":
     }
 
     mdp = MDP(states, actions, transition_probabilities, rewards, 's1')  # create an MDP
-
-    mdp.inspect_probabilities()
-
-    # mdp.calculate_value()
-
-    print(mdp.value)

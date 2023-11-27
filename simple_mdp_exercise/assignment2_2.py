@@ -42,7 +42,3 @@ rewards = {
 terminal_states = ['0', '4']
 
 mdp = MDP(states, actions, transition_probabilities, rewards, terminal_states, '0')
-
-mdp.calculate_value()
-
-print(mdp.value)

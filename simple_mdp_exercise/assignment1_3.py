@@ -21,7 +21,3 @@ if __name__ == "__main__":
     }
 
     mdp = MDP(states, actions, transition_probabilities, rewards, 's0')  # create an MDP
-
-    mdp.calculate_value()
-
-    print(mdp.value)
