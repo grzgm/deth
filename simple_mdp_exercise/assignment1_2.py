@@ -1,4 +1,5 @@
 import random
+from math import isclose
 
 
 class MDP:
@@ -28,6 +29,11 @@ class MDP:
 
     def lookup_reward(self, state: str, action: str, next_state: str):
         return self.transition_probabilities[state].get(action, {}).get(next_state, 0)
+
+    def inspect_probabilities(self):
+        for state in self.transition_probabilities.values():
+            for action in state.values():
+                assert isclose(sum(action.values()), 1, abs_tol=1e-4)
 
     # def value(self, state: str):
     #     pass
@@ -67,6 +73,8 @@ if __name__ == "__main__":
 
     mdp = MDP(states, actions, transition_probabilities, rewards, 's1')  # create an MDP
 
-    mdp.calculate_value()
+    mdp.inspect_probabilities()
+
+    # mdp.calculate_value()
 
     print(mdp.value)
