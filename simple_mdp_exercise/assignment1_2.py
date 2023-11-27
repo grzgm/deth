@@ -15,6 +15,7 @@ class MDP:
         self.gamma = gamma
         self.eps = eps
         self.random_termination = random_termination
+        assert 0 <= self.random_termination <= 1
         self.cost_of_living = cost_of_living
 
         self.value = {}

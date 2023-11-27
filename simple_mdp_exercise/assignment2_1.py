@@ -21,4 +21,4 @@ rewards = {
 
 terminal_states = ['0', '4']
 
-mdp = MDP(states, actions, transition_probabilities, rewards, '2', terminal_states)
+mdp = MDP(states, actions, transition_probabilities, rewards, '2', terminal_states, random_termination=0.3, cost_of_living=-1.5)
