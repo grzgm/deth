@@ -9,23 +9,24 @@ gamma = 0.95  # Discount factor between (0-1)
 episodes = 4 * 2000  # Number of episodes to learn, keep this a multiple of four for nice plotting
 T = 100  # Maximum steps in an episode
 epsilon = 0.05  # Exploration rate between (0-1)
-cost_of_living = -0.01  # Used when FrequentRewards = True, incentivize the agent for efficiency
+cost_of_living = -0.01  # Used when frequent_rewards = True, incentivize the agent for efficiency
+is_slippery = True
 
 # Choose environment
-env = gym.make("FrozenLake8x8-v1", is_slippery=False)
-FrequentRewards = True  # When False the original environment rewards are used
+env = gym.make("FrozenLake8x8-v1", is_slippery=is_slippery)
+frequent_rewards = True  # When False the original environment rewards are used
 
 Q = np.zeros([env.observation_space.n, env.action_space.n])
 rewards_per_episode = []
 q_values_at_intervals = []  # Store Q-values at intervals
 
 for episode in range(episodes):
-    state,prob = env.reset()
+    state, prob = env.reset()
     total_reward = 0
     episode_states = []
     episode_actions = []
     episode_rewards = []
-    
+
     for step in range(T):
         # Choose action based on epsilon-greedy policy
         if np.random.rand() < epsilon:
@@ -33,10 +34,10 @@ for episode in range(episodes):
         else:
             action = np.argmax(Q[state, :])
 
-        new_state, reward, terminated,truncated, info = env.step(action)
+        new_state, reward, terminated, truncated, info = env.step(action)
 
-        if FrequentRewards:
-            if terminated and reward == 0: # agent fall in the hole!
+        if frequent_rewards:
+            if terminated and reward == 0:  # agent fall in the hole!
                 reward = reward - 1
             reward = reward + cost_of_living
 
@@ -68,12 +69,12 @@ for episode in range(episodes):
     if (episode + 1) % (episodes // 4) == 0:
         q_values_at_intervals.append(np.copy(Q))  # Store a copy of Q-values
 
-
 # Plotting rewards per episode
 plt.figure(figsize=(15, 5))
 plt.subplot(1, 2, 1)
 plt.plot(rewards_per_episode, label='Total Reward')
 plt.title('Rewards per Episode')
+plt.suptitle(f'is_slippery={is_slippery}, frequent_rewards={frequent_rewards}')
 plt.xlabel('Episode')
 plt.ylabel('Total Reward')
 
@@ -85,15 +86,16 @@ plt.plot(moving_averages, label=f'Moving Average (Window {moving_average_window}
 plt.legend()
 
 # Plotting the heatmap of Q-values at intervals
-fig, ax = plt.subplots(1, len(q_values_at_intervals), figsize=(15, 5))
+fig, ax = plt.subplots(1, len(q_values_at_intervals), figsize=(10, 5))
 
 for i, q_values in enumerate(q_values_at_intervals):
     ax[i].imshow(q_values, cmap='hot', interpolation='nearest')
     ax[i].set_title(f'Q-Values at Episode {(episodes // 4) * (i + 1)}')
+    ax[i].title.set_text(f'is_slippery={is_slippery}, frequent_rewards={frequent_rewards}')
     ax[i].axis('off')  # Turn off axis
     plt.colorbar(ax[i].imshow(q_values, cmap='hot', interpolation='nearest'), ax=ax[i])
     plt.pause(0.1)  # Pause briefly to update the plot
+    break
 
 # Display plots and pause to show the graphs
 plt.show()
-input('Press any key to exit')
