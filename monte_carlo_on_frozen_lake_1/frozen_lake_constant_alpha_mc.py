@@ -105,4 +105,7 @@ def frozen_lake(is_slippery=False, frequent_rewards=True, epsilon=0.05, alpha=0.
 
 
 if __name__ == '__main__':
-    frozen_lake(is_slippery=False, frequent_rewards=True, epsilon=0.05, alpha=0.08, gamma=0.95)
+    # frozen_lake(is_slippery=False, frequent_rewards=True, epsilon=0.05, alpha=0.08, gamma=0.95)
+    frozen_lake(is_slippery=True, frequent_rewards=True, epsilon=0.01, alpha=0.01, gamma=0.6)
+    # frozen_lake(is_slippery=True, frequent_rewards=True, epsilon=0.01, alpha=0.01, gamma=0.8)
+    # frozen_lake(epsilon=0.05, alpha=0.01, gamma=0.95)
