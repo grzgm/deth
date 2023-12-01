@@ -3,15 +3,14 @@ from math import isclose
 
 
 class MDP:
-    def __init__(self, states, actions, transition_probabilities, rewards, start_state, terminal_states = {}, gamma=0.9, eps=1e6, random_termination=0.0,
-                 cost_of_living=0.0):
+    def __init__(self, states, actions, transition_probabilities, rewards, start_state, gamma=0.9,
+                 eps=1e6, random_termination=0.0, cost_of_living=0.0):
         self.states = states
         self.actions = actions
         self.transition_probabilities = transition_probabilities
         self.inspect_probabilities()
         self.rewards = rewards
         self.start_state = start_state
-        self.terminal_states = terminal_states
         self.gamma = gamma
         self.eps = eps
         self.random_termination = random_termination
@@ -40,19 +39,33 @@ class MDP:
     # def value(self, state: str):
     #     pass
 
-    # def action_value(self, state: str, action: str):
-    #     next_states = self.transition_probabilities[state].get(action, {})
-    #     return sum(self.lookup_transition_probability(state, action, next_state) * (
-    #             self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
-    #                in next_states)
-    #
-    # def policy_random(self):
-    #     return random.choice(self.actions)
-    #
-    # def estimate_value(self):
-    #     for _ in range(int(self.eps)):
-    #         for state in self.states:
-    #             self.value[state] = self.action_value(state, self.policy_random())
+    def action_value(self, state: str, action: str):
+        next_states = self.transition_probabilities[state].get(action, {})
+        return sum(self.lookup_transition_probability(state, action, next_state) * (
+                self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
+                   in next_states)
+
+    def policy(self, state):
+        best_action = None
+        best_value = None
+        for action, next_states in self.transition_probabilities[state].items():
+            for next_state in next_states:
+                new_value = self.transition_probabilities[state][action][next_state] * self.value[state]
+                if best_action == None:
+                    best_action = action
+                    best_value = new_value
+                elif best_value < new_value:
+                    best_action = action
+                    best_value = new_value
+
+        return best_action
+
+        # return random.choice(self.actions)
+
+    def estimate_value(self):
+        for _ in range(int(self.eps)):
+            for state in self.states:
+                self.value[state] = self.action_value(state, self.policy(state))
 
 
 if __name__ == "__main__":
@@ -74,3 +87,7 @@ if __name__ == "__main__":
     }
 
     mdp = MDP(states, actions, transition_probabilities, rewards, 's1')  # create an MDP
+
+    mdp.estimate_value()
+
+    print(mdp.value)
