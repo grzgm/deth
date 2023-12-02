@@ -20,10 +20,4 @@ rewards = {
     '3': {'r': {'4': 1}},
 }
 
-terminal_states = ['0', '4']
-
-mdp = MDP(states, actions, transition_probabilities, rewards, '2', terminal_states, random_termination=0.3, cost_of_living=-1.5)
-
-mdp.estimate_value()
-
-print(mdp.value)
+mdp = MDP(states, actions, transition_probabilities, rewards, '2', random_termination=0.3, cost_of_living=-1.5)
