@@ -1,107 +1,110 @@
+import random
+from math import isclose
+
 import numpy as np
 
-class MDP:
-    def __init__(self, states, actions, transition_probabilities, rewards, gamma=0.9):
-        """
-        Initialize the Markov Decision Process.
 
-        Parameters:
-        - states (list): List of possible states.
-        - actions (list): List of possible actions.
-        - transition_probabilities (dict): Dictionary representing transition probabilities.
-            Format: {state: {action: {next_state: probability}}}
-        - rewards (dict): Dictionary representing immediate rewards.
-            Format: {state: {action: {next_state: reward}}}
-        - gamma (float): Discount factor for future rewards (default is 0.9).
-        """
+class MDP:
+    def __init__(self, states, actions, transition_probabilities, rewards, start_state, gamma=0.9,
+                 eps=1e6, random_termination=0.0, cost_of_living=0.0):
         self.states = states
         self.actions = actions
         self.transition_probabilities = transition_probabilities
+        self.inspect_probabilities()
         self.rewards = rewards
+        self.current_state = start_state
+
         self.gamma = gamma
+        self.eps = eps
+        self.random_termination = random_termination
+        assert 0 <= self.random_termination <= 1
+        self.cost_of_living = cost_of_living
 
-    def get_transition_probability(self, state, action, next_state):
-        """
-        Get the transition probability for a specific state, action, and next state.
+        self.value = {}
+        for state in states:
+            self.value[state] = 0.0
 
-        Parameters:
-        - state: Current state.
-        - action: Action taken.
-        - next_state: Next state.
+    # def reset(self):
+    #     for state in self.states:
+    #         self.value[state] = 0.0
 
-        Returns:
-        - float: Transition probability.
-        """
-        return self.transition_probabilities[state][action].get(next_state, 0.0)
+    def lookup_transition_probability(self, state: str, action: str, next_state: str):
+        return self.transition_probabilities[state].get(action, {}).get(next_state, 0.0)
 
-    def get_reward(self, state, action, next_state):
-        """
-        Get the immediate reward for a specific state, action, and next state.
+    def lookup_reward(self, state: str, action: str, next_state: str):
+        return self.transition_probabilities[state].get(action, {}).get(next_state, 0)
 
-        Parameters:
-        - state: Current state.
-        - action: Action taken.
-        - next_state: Next state.
+    def inspect_probabilities(self):
+        for state in self.transition_probabilities.values():
+            for action in state.values():
+                assert isclose(sum(action.values()), 1, abs_tol=1e-4)
 
-        Returns:
-        - float: Immediate reward.
-        """
-        return self.rewards[state][action].get(next_state, 0.0)
+    def step(self, action):
+        if(len(transition_probabilities[self.current_state]) == 0):
+            return None
+        next_states = list(transition_probabilities[self.current_state][action].keys())
+        probabilities = list(transition_probabilities[self.current_state][action].values())
+        self.current_state = np.random.choice(next_states, p=probabilities)
+        return self.current_state
 
-    def value_iteration(self, num_iterations=100):
-        """
-        Perform value iteration to find the optimal value function.
 
-        Parameters:
-        - num_iterations (int): Number of iterations for the value iteration algorithm.
+    # def value(self, state: str):
+    #     pass
 
-        Returns:
-        - dict: Optimal value function.
-        """
-        values = {state: 0.0 for state in self.states}
+    # def action_value(self, state: str, action: str):
+    #     next_states = self.transition_probabilities[state].get(action, {})
+    #     return sum(self.lookup_transition_probability(state, action, next_state) * (
+    #             self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
+    #                in next_states)
+    #
+    # def policy(self, state):
+    #     best_action = None
+    #     best_value = None
+    #     for action, next_states in self.transition_probabilities[state].items():
+    #         for next_state in next_states:
+    #             new_value = self.transition_probabilities[state][action][next_state] * self.value[state]
+    #             if best_action == None:
+    #                 best_action = action
+    #                 best_value = new_value
+    #             elif best_value < new_value:
+    #                 best_action = action
+    #                 best_value = new_value
+    #
+    #     return best_action
 
-        for _ in range(num_iterations):
-            new_values = {}
+    # return random.choice(self.actions)
+
+    def estimate_value(self):
+        for _ in range(int(self.eps)):
             for state in self.states:
-                max_value = float('-inf')
-                for action in self.actions:
-                    action_value = sum(
-                        self.get_transition_probability(state, action, next_state) *
-                        (self.get_reward(state, action, next_state) +
-                         self.gamma * values[next_state])
-                        for next_state in self.states
-                    )
-                    max_value = max(max_value, action_value)
-                new_values[state] = max_value
+                self.value[state] = self.action_value(state, self.policy(state))
 
-            values = new_values
 
-        return values
+if __name__ == "__main__":
+    states = ['0', '1', '2', '3', '4']
+    actions = ['l', 'r']
 
-# Example usage:
-# Define states, actions, transition probabilities, and rewards
-states = ['S', 'A', 'B', 'T']
-actions = ['left', 'right']
-transition_probabilities = {
-    'S': {'left': {'S': 0.9, 'A': 0.1}, 'right': {'S': 0.1, 'A': 0.9}},
-    'A': {'left': {'S': 0.8, 'A': 0.2}, 'right': {'B': 1.0}},
-    'B': {'left': {'A': 0.8, 'B': 0.2}, 'right': {'T': 1.0}},
-    'T': {'left': {'B': 1.0}, 'right': {'B': 1.0}}
-}
-rewards = {
-    'S': {'left': {'S': 0, 'A': 0}, 'right': {'S': 0, 'A': 0}},
-    'A': {'left': {'S': 0, 'A': 0}, 'right': {'B': 1.0}},
-    'B': {'left': {'A': 0, 'B': 0}, 'right': {'T': 10.0}},
-    'T': {'left': {'B': 0}, 'right': {'B': 0}}
-}
+    # Terminal States have no actions
+    transition_probabilities = {
+        '0': {},
+        '1': {'l': {'0': 1},
+              'r': {'2': 1}},
+        '2': {'l': {'1': 1},
+              'r': {'3': 1}},
+        '3': {'l': {'2': 1},
+              'r': {'4': 1}},
+        '4': {},
+    }
 
-# Create an MDP instance
-mdp = MDP(states, actions, transition_probabilities, rewards)
+    rewards = {
+        '1': {'l': {'0': -1}},
+        '3': {'r': {'4': 1}},
+    }
 
-# Perform value iteration to find the optimal value function
-optimal_values = mdp.value_iteration()
+    mdp = MDP(states, actions, transition_probabilities, rewards, '1', random_termination=0.3, cost_of_living=-1.5)
 
-# Print the optimal values for each state
-print("Optimal Values:")
-for state, value in optimal_values.items():
-    print(f"{state}: {value}")
+    for step in range(100):
+        new_state = mdp.step('r')
+        print(mdp.current_state)
+        if (new_state==None):
+            break
