@@ -29,10 +29,10 @@ class MDP:
     #         self.value[state] = 0.0
 
     def lookup_transition_probability(self, state: str, action: str, next_state: str):
-        return self.transition_probabilities[state].get(action, {}).get(next_state, 0.0)
+        return self.transition_probabilities.get(state, {}).get(action, {}).get(next_state, 0.0)
 
     def lookup_reward(self, state: str, action: str, next_state: str):
-        return self.transition_probabilities[state].get(action, {}).get(next_state, 0)
+        return self.rewards.get(state, {}).get(action, {}).get(next_state, 0)
 
     def inspect_probabilities(self):
         for state in self.transition_probabilities.values():
@@ -40,12 +40,13 @@ class MDP:
                 assert isclose(sum(action.values()), 1, abs_tol=1e-4)
 
     def step(self, action):
-        if(len(transition_probabilities[self.current_state]) == 0):
-            return None
         next_states = list(transition_probabilities[self.current_state][action].keys())
         probabilities = list(transition_probabilities[self.current_state][action].values())
-        self.current_state = np.random.choice(next_states, p=probabilities)
-        return self.current_state
+        new_state = np.random.choice(next_states, p=probabilities)
+        reward = self.lookup_reward(self.current_state, action, new_state)
+        is_terminal = len(transition_probabilities[new_state]) == 0
+        self.current_state = new_state
+        return (self.current_state, reward, is_terminal)
 
 
     # def value(self, state: str):
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     mdp = MDP(states, actions, transition_probabilities, rewards, '1', random_termination=0.3, cost_of_living=-1.5)
 
     for step in range(100):
-        new_state = mdp.step('r')
-        print(mdp.current_state)
-        if (new_state==None):
+        new_state, reward, is_terminal = mdp.step('r')
+        print(new_state, reward, is_terminal)
+        if (is_terminal):
             break
