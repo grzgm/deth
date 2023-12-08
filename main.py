@@ -31,6 +31,9 @@ class MDP:
     def lookup_transition_probability(self, state: str, action: str, next_state: str):
         return self.transition_probabilities.get(state, {}).get(action, {}).get(next_state, 0.0)
 
+    def possible_actions(self, state: str):
+        return list(self.transition_probabilities.get(state, {}).keys())
+
     def lookup_reward(self, state: str, action: str, next_state: str):
         return self.rewards.get(state, {}).get(action, {}).get(next_state, 0)
 
@@ -48,7 +51,6 @@ class MDP:
         self.current_state = new_state
         return (self.current_state, reward, is_terminal)
 
-
     # def value(self, state: str):
     #     pass
 
@@ -57,7 +59,13 @@ class MDP:
     #     return sum(self.lookup_transition_probability(state, action, next_state) * (
     #             self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
     #                in next_states)
-    #
+
+    # def state_value(self, state: str, action: str):
+    #     next_states = self.transition_probabilities[state].get(action, {})
+    #     return sum(self.lookup_transition_probability(state, action, next_state) * (
+    #             self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
+    #                in next_states)
+
     # def policy(self, state):
     #     best_action = None
     #     best_value = None
@@ -80,7 +88,6 @@ class MDP:
             for state in self.states:
                 self.value[state] = self.action_value(state, self.policy(state))
 
-
 if __name__ == "__main__":
     states = ['0', '1', '2', '3', '4']
     actions = ['l', 'r']
@@ -102,10 +109,29 @@ if __name__ == "__main__":
         '3': {'r': {'4': 1}},
     }
 
-    mdp = MDP(states, actions, transition_probabilities, rewards, '1', random_termination=0.3, cost_of_living=-1.5)
+    state_value_array = []
+    action_value_array = np.zeros((len(states), len(actions)))
 
-    for step in range(100):
-        new_state, reward, is_terminal = mdp.step('r')
+    episodes = 1
+    max_steps_in_episode = 100
+    epsilon = 1.00
+    start_state = '1'
+
+    mdp = MDP(states, actions, transition_probabilities, rewards, start_state, random_termination=0.3, cost_of_living=-1.5)
+
+for episode in range(episodes):
+    new_state = start_state
+    total_reward = 0
+
+    for step in range(max_steps_in_episode):
+        # Choose action based on epsilon-greedy policy
+        if np.random.rand() < epsilon:
+            action = np.random.choice(mdp.possible_actions(mdp.current_state))
+        else:
+            action = actions[np.argmax(action_value_array[states.index(new_state), :])]
+
+        new_state, reward, is_terminal = mdp.step(action)
+        print(mdp.possible_actions(new_state, ))
         print(new_state, reward, is_terminal)
         if (is_terminal):
             break
