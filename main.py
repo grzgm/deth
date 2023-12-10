@@ -127,38 +127,33 @@ gamma = 0.9
 mdp = MDP(states, actions, transition_probabilities, rewards, random_termination=0.3, cost_of_living=-1.5)
 
 for episode in range(episodes):
+    print(episode)
     previous_state = start_state_index
     total_reward = 0
 
+    # start episode
     for step in range(max_steps_in_episode):
-        # Choose action based on epsilon-greedy policy
+        # choose action based on epsilon-greedy policy
         if np.random.rand() < epsilon:
             # random action
             action = np.random.choice(mdp.possible_actions(previous_state))
         else:
-            # # best action
-            # possible_actions_indexes = [index for index, element in enumerate(actions) if element in mdp.possible_actions(previous_state)]
-            # # Extract the elements at the allowed indexes
-            # allowed_elements = action_value_array[states.index(previous_state), possible_actions_indexes]
-            #
-            # # Find the index of the element with the highest value
-            # max_index_in_allowed = np.unravel_index(allowed_elements.argmax(), allowed_elements.shape)
-            #
-            # # Convert the index from allowed_elements back to the original my_array
-            # max_index_in_original = (states.index(previous_state), possible_actions_indexes[max_index_in_allowed[0]])
-            # action = actions[max_index_in_original[1]]
+            # best action
             action = np.argmax(action_value_array[previous_state, :])
 
+        # make an action
         new_state, reward, is_terminal = mdp.step(previous_state, action)
 
+        # update Action Value function (Q) for Q-learning
         action_value_array[previous_state, action] = (1 - alpha) * action_value_array[
-            previous_state, action] + alpha * (reward + gamma * max(
-            action_value_array[new_state, :]))
+            previous_state, action] + alpha * (reward + gamma * max(action_value_array[new_state, :]))
 
         previous_state = new_state
-        print(mdp.possible_actions(new_state, ))
+
+        # print(mdp.possible_actions(new_state, ))
         # print(new_state, reward, is_terminal)
-        print(new_state, reward)
+        # print(new_state, reward)
+        # if new state is terminal finish episode
         if (is_terminal):
             break
 
