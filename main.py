@@ -67,21 +67,6 @@ class MDP:
     #             self.lookup_reward(state, action, next_state) + self.gamma * self.value[next_state]) for next_state
     #                in next_states)
 
-    # def policy(self, state):
-    #     best_action = None
-    #     best_value = None
-    #     for action, next_states in self.transition_probabilities[state].items():
-    #         for next_state in next_states:
-    #             new_value = self.transition_probabilities[state][action][next_state] * self.value[state]
-    #             if best_action == None:
-    #                 best_action = action
-    #                 best_value = new_value
-    #             elif best_value < new_value:
-    #                 best_action = action
-    #                 best_value = new_value
-    #
-    #     return best_action
-
     # return random.choice(self.actions)
 
     def estimate_value(self):
@@ -107,20 +92,27 @@ for state_index in range(len(states)):
                 transition_probabilities[state_index, action_index, next_state_index] = 1
 
 rewards = np.zeros((len(states), len(actions), len(states)))
-rewards[1, actions.index('d'), 0] = 1
-rewards[5, actions.index('u'), 6] = 0
+rewards[states.index('1'), actions.index('d'), states.index('0')] = 1
+rewards[states.index('5'), actions.index('u'), states.index('6')] = 0
+
+print(rewards[states.index('5'), actions.index('u'), states.index('6')])
+print(transition_probabilities[states.index('5'), actions.index('u'), states.index('6')])
 
 state_value_array = []
 action_value_array = np.zeros((len(states), len(actions)))
 
 episodes = 1000
 max_steps_in_episode = 1000
-start_state_index = 2
+start_state_index = 3
+
+q_learning_enabled = True
+monte_carlo_enabled = True
 
 # Learning Rate
-alpha = 0.04
+alpha_q_learning = 0.04
+alpha_monte_carlo = 0.1
 # Exploration Rate
-epsilon = 1
+epsilon = 0.05
 # Discount Factor
 gamma = 0.9
 
@@ -130,11 +122,14 @@ for episode in range(episodes):
     print(episode)
     previous_state = start_state_index
     total_reward = 0
+    monte_carlo_history = []
 
     # start episode
     for step in range(max_steps_in_episode):
         # choose action based on epsilon-greedy policy
-        if np.random.rand() < epsilon:
+        # np.max(action_value_array[previous_state, :]) is there to balance starting states
+        # when action_value_array is full of zeros and agent always goes with action with index 0
+        if np.random.rand() < epsilon or np.max(action_value_array[previous_state, :]):
             # random action
             action = np.random.choice(mdp.possible_actions(previous_state))
         else:
@@ -145,17 +140,34 @@ for episode in range(episodes):
         new_state, reward, is_terminal = mdp.step(previous_state, action)
 
         # update Action Value function (Q) for Q-learning
-        action_value_array[previous_state, action] = (1 - alpha) * action_value_array[
-            previous_state, action] + alpha * (reward + gamma * max(action_value_array[new_state, :]))
+        if q_learning_enabled:
+            action_value_array[previous_state, action] = (1 - alpha_q_learning) * action_value_array[
+                previous_state, action] + alpha_q_learning * (reward + gamma * max(action_value_array[new_state, :]))
+
+        # add the episode states, actions, rewards for  Monte Carlo
+        if monte_carlo_enabled:
+            monte_carlo_history.append((previous_state, action, reward))
 
         previous_state = new_state
 
-        # print(mdp.possible_actions(new_state, ))
-        # print(new_state, reward, is_terminal)
-        # print(new_state, reward)
         # if new state is terminal finish episode
         if (is_terminal):
             break
 
-with np.printoptions(precision=3, suppress=True):
-    print(action_value_array)
+    if monte_carlo_enabled:
+        # Calculate returns and update Action Value function (Q)
+        episode_return = 0
+        for t in range(len(monte_carlo_history) - 1, -1, -1):
+            state = monte_carlo_history[t][0]
+            action = monte_carlo_history[t][1]
+            reward = monte_carlo_history[t][2]
+
+            episode_return = gamma * episode_return + reward
+            action_value_array[state, action] += alpha_monte_carlo * (
+                        episode_return - action_value_array[state, action])
+
+print('\tu\t\td')
+for s in states:
+    print(s, end=' ')
+    with np.printoptions(precision=3, suppress=True):
+        print(action_value_array[states.index(s)])
